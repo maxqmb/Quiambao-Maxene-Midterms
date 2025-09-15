@@ -1,59 +1,51 @@
-/*
-Quiambao, Maxene P
-WD-302
-*/
 import express from 'express';
 import path from 'path';
-const __dirname = import.meta.dirname;
+import { fileURLToPath } from 'url';
+import bodyParser from 'body-parser';
 
 const app = express();
+
+// This part allows using __dirname with ES Modules
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+// Enable JSON parsing middleware
+app.use(bodyParser.json());
+
+// Serve static files from the "public" folder (for the Vue app)
 app.use(express.static('public'));
 
-/*PAGE ROUTES*/
-
+// Serve the Vue app's static files
 app.get('/', (req, res) => {
-  res.sendFile(path.join(__dirname, 'public', 'home.html'));
+  res.sendFile(path.join(__dirname, 'dist', 'index.html'));
 });
 
-app.get('/studentForm', (req, res) => {
-  res.sendFile(path.join(__dirname, 'public', 'studentForm.html'));
-});
-
-app.get('/adminForm', (req, res) => {
-  res.sendFile(path.join(__dirname, 'public', 'adminForm.html'));
-});
-
-/*API ROUTES*/
-app.get('/getHome', (req, res) => {
-  const response = { 
-    systemName: 'Student Management System',
-    status: 'active',
-    message: 'Welcome! Choose your portal to get started'
-  };
-  console.log("Home Data:", response);
-  res.json(response);
-});
-
-app.get('/getStudent', (req, res) => {
-  const { studentID, firstName, lastName, section } = req.query;
-  if (!studentID) {
-    return res.status(400).send('Student ID is required');
+// API Routes for POST request to submit data
+app.post('/submitStudent', (req, res) => {
+  const { studentID, firstName, lastName, section } = req.body;
+  
+  if (!studentID || !firstName || !lastName || !section) {
+    return res.status(400).json({ success: false, message: 'All fields are required.' });
   }
-  const response = { studentID, firstName, lastName, section };
-  console.log("Student Data:", response);
-  res.json(response);
+
+  console.log("Student Form Submitted:", { studentID, firstName, lastName, section });
+
+  res.json({ success: true, message: 'Student form submitted successfully!' });
 });
 
-app.get('/getAdmin', (req, res) => {
-  const { adminID, firstName, lastName, department } = req.query;
-  if (!adminID) {
-    return res.status(400).send('Admin ID is required');
+app.post('/submitAdmin', (req, res) => {
+  const { adminID, firstName, lastName, department } = req.body;
+
+  if (!adminID || !firstName || !lastName || !department) {
+    return res.status(400).json({ success: false, message: 'All fields are required.' });
   }
-  const response = { adminID, firstName, lastName, department };
-  console.log("Admin Data:", response);
-  res.json(response);
+
+  console.log("Admin Form Submitted:", { adminID, firstName, lastName, department });
+
+  res.json({ success: true, message: 'Admin form submitted successfully!' });
 });
 
+// Start the server
 const server = app.listen(5000, () => {
   console.log(`Server running at http://localhost:5000`);
 });
